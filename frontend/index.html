@@ -159,6 +159,30 @@
             cursor: not-allowed;
         }
 
+        .btn-random {
+            padding: 12px 16px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-random:hover {
+            background: #5a6268;
+        }
+
+        .btn-random.active {
+            background: #28a745;
+        }
+
+        .btn-random.active:hover {
+            background: #218838;
+        }
+
         .char-count {
             font-size: 12px;
             color: #888;
@@ -418,7 +442,10 @@
 
                 <div class="form-group">
                     <label>작성자 <span class="required">*</span></label>
-                    <input type="text" id="userName" placeholder="작성자 이름">
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="userName" placeholder="작성자 이름" style="flex: 1;">
+                        <button type="button" class="btn-random" id="randomNameBtn">랜덤</button>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -469,6 +496,31 @@
         const imageUploadArea = document.getElementById('imageUploadArea');
         const imageInput = document.getElementById('imageInput');
         const imagePreviewList = document.getElementById('imagePreviewList');
+
+        // 랜덤 이름 생성
+        const randomNameBtn = document.getElementById('randomNameBtn');
+        const surnames = ['김', '이', '박', '최', '정', '강', '조', '윤', '장', '임', '한', '오', '서', '신', '권', '황', '안', '송', '류', '전', '홍', '고', '문', '양', '손', '배', '백', '허', '유', '남', '심', '노', '하', '곽', '성', '차', '주', '우', '구', '민', '진', '나', '지', '엄', '채', '원', '천', '방', '공', '현'];
+        const nameChars = ['영', '정', '민', '지', '현', '수', '진', '은', '서', '준', '하', '윤', '호', '연', '우', '주', '성', '혜', '미', '경', '희', '선', '원', '재', '용', '태', '아', '인', '승', '기', '혁', '동', '석', '상', '훈', '빈', '율', '찬', '림', '솔', '담', '결', '온', '별', '돈', '샘', '봄', '새', '한', '빛', '규', '완', '철', '광', '병', '건', '웅', '식', '근', '환', '범', '섭', '일', '혼', '목', '엽', '균', '형', '천', '욱', '언', '덕', '모', '종', '학', '열', '순', '복', '숙', '자', '옥', '분', '란', '임', '애', '춘', '길', '홍', '국', '중', '만', '양', '두', '삼', '봉', '갑'];
+
+        function generateRandomName() {
+            const surname = surnames[Math.floor(Math.random() * surnames.length)];
+            const lastChar = nameChars[Math.floor(Math.random() * nameChars.length)];
+            return `${surname}*${lastChar}`;
+        }
+
+        let randomNameMode = false;
+
+        randomNameBtn.addEventListener('click', () => {
+            randomNameMode = !randomNameMode;
+            randomNameBtn.classList.toggle('active', randomNameMode);
+            randomNameBtn.textContent = randomNameMode ? '랜덤 ON' : '랜덤';
+            if (randomNameMode) {
+                userName.value = generateRandomName();
+                userName.readOnly = true;
+            } else {
+                userName.readOnly = false;
+            }
+        });
 
         // 토스트
         function showToast(message, type = 'info') {
@@ -671,7 +723,11 @@
                     renderRecentReviews();
 
                     // 폼 초기화 (상품 ID와 평점은 유지)
-                    userName.value = '';
+                    if (randomNameMode) {
+                        userName.value = generateRandomName();
+                    } else {
+                        userName.value = '';
+                    }
                     content.value = '';
                     charCount.textContent = '0';
                     uploadedImages = [];

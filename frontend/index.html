@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리뷰 추가기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: #1a1a2e;
+            color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+        }
+
+        header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .form-group label .required {
+            color: #dc3545;
+        }
+
+        .form-group label .optional {
+            color: #888;
+            font-weight: 400;
+            font-size: 12px;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4a90d9;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #aaa;
+        }
+
+        .rating-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .rating-input label {
+            cursor: pointer;
+            margin-bottom: 0;
+        }
+
+        .rating-input input {
+            display: none;
+        }
+
+        .rating-input span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 40px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .rating-input input:checked + span {
+            background: #ffc107;
+            border-color: #ffc107;
+            color: white;
+        }
+
+        .rating-input label:hover span {
+            border-color: #ffc107;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #4a90d9;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3a7bc8;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .char-count {
+            font-size: 12px;
+            color: #888;
+            text-align: right;
+            margin-top: 6px;
+        }
+
+        /* 이미지 업로드 */
+        .image-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .image-upload-area:hover {
+            border-color: #4a90d9;
+            background: #f8f9fa;
+        }
+
+        .image-upload-area.dragover {
+            border-color: #4a90d9;
+            background: #e8f4fd;
+        }
+
+        .image-upload-area input {
+            display: none;
+        }
+
+        .image-upload-area .icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .image-upload-area .text {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .image-upload-area .hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .image-preview-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .image-preview-item {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview-item .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-preview-item .remove-btn:hover {
+            background: #dc3545;
+        }
+
+        .image-preview-item.uploading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-preview-item.uploading::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 24px;
+            height: 24px;
+            margin: -12px 0 0 -12px;
+            border: 2px solid #4a90d9;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            z-index: 1;
+        }
+
+        /* 토스트 */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+        }
+
+        .toast {
+            background: #333;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+            max-width: 300px;
+        }
+
+        .toast.success {
+            background: #28a745;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* 로딩 */
+        .loading {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 최근 등록 리뷰 */
+        .recent-reviews {
+            margin-top: 20px;
+        }
+
+        .recent-reviews h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .recent-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-left: 4px solid #28a745;
+        }
+
+        .recent-item .meta {
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .recent-item .content {
+            font-size: 12px;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .recent-item .rating {
+            color: #ffc107;
+        }
+
+        .recent-item .images {
+            display: flex;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        .recent-item .images img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>리뷰 추가기</h1>
+            <p>상품 리뷰 등록 도구</p>
+        </header>
+
+        <div class="card">
+            <form id="reviewForm">
+                <div class="form-group">
+                    <label>상품 ID <span class="required">*</span></label>
+                    <input type="text" id="productId" placeholder="상품 ID 입력 (예: 6911f07d7b999c71f32be83e)">
+                </div>
+
+                <div class="form-group">
+                    <label>평점 <span class="required">*</span></label>
+                    <div class="rating-input">
+                        <label><input type="radio" name="rating" value="0.5"><span>0.5</span></label>
+                        <label><input type="radio" name="rating" value="1"><span>1</span></label>
+                        <label><input type="radio" name="rating" value="1.5"><span>1.5</span></label>
+                        <label><input type="radio" name="rating" value="2"><span>2</span></label>
+                        <label><input type="radio" name="rating" value="2.5"><span>2.5</span></label>
+                        <label><input type="radio" name="rating" value="3"><span>3</span></label>
+                        <label><input type="radio" name="rating" value="3.5"><span>3.5</span></label>
+                        <label><input type="radio" name="rating" value="4"><span>4</span></label>
+                        <label><input type="radio" name="rating" value="4.5"><span>4.5</span></label>
+                        <label><input type="radio" name="rating" value="5" checked><span>5</span></label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>작성자 <span class="required">*</span></label>
+                    <input type="text" id="userName" placeholder="작성자 이름">
+                </div>
+
+                <div class="form-group">
+                    <label>리뷰 내용 <span class="optional">(선택)</span></label>
+                    <textarea id="content" placeholder="리뷰 내용을 입력하세요"></textarea>
+                    <div class="char-count"><span id="charCount">0</span> / 2000</div>
+                </div>
+
+                <div class="form-group">
+                    <label>이미지 <span class="optional">(선택, 최대 5장)</span></label>
+                    <div class="image-upload-area" id="imageUploadArea">
+                        <input type="file" id="imageInput" accept="image/*" multiple>
+                        <div class="icon">+</div>
+                        <div class="text">클릭하거나 이미지를 드래그하세요</div>
+                        <div class="hint">JPG, PNG, GIF, WEBP (최대 10MB)</div>
+                    </div>
+                    <div class="image-preview-list" id="imagePreviewList"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="submitBtn">리뷰 등록</button>
+            </form>
+
+            <div class="recent-reviews" id="recentReviews" style="display: none;">
+                <h3>최근 등록된 리뷰</h3>
+                <div id="recentList"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        const API_BASE = '/api';
+
+        // 상태
+        let recentReviews = [];
+        let uploadedImages = []; // { url: string, file?: File }
+
+        // DOM
+        const form = document.getElementById('reviewForm');
+        const productId = document.getElementById('productId');
+        const userName = document.getElementById('userName');
+        const content = document.getElementById('content');
+        const charCount = document.getElementById('charCount');
+        const submitBtn = document.getElementById('submitBtn');
+        const recentReviewsDiv = document.getElementById('recentReviews');
+        const recentList = document.getElementById('recentList');
+        const imageUploadArea = document.getElementById('imageUploadArea');
+        const imageInput = document.getElementById('imageInput');
+        const imagePreviewList = document.getElementById('imagePreviewList');
+
+        // 토스트
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // 글자 수
+        content.addEventListener('input', () => {
+            charCount.textContent = content.value.length;
+        });
+
+        // 이미지 업로드 영역 클릭
+        imageUploadArea.addEventListener('click', () => imageInput.click());
+
+        // 드래그 앤 드롭
+        imageUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            imageUploadArea.classList.add('dragover');
+        });
+
+        imageUploadArea.addEventListener('dragleave', () => {
+            imageUploadArea.classList.remove('dragover');
+        });
+
+        imageUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            imageUploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        // 파일 선택
+        imageInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+            imageInput.value = '';
+        });
+
+        // 파일 처리
+        async function handleFiles(files) {
+            const productIdVal = productId.value.trim();
+
+            if (!productIdVal) {
+                showToast('상품 ID를 먼저 입력해주세요', 'error');
+                productId.focus();
+                return;
+            }
+
+            for (const file of files) {
+                if (uploadedImages.length >= 5) {
+                    showToast('이미지는 최대 5장까지 업로드 가능합니다', 'error');
+                    break;
+                }
+
+                if (!file.type.startsWith('image/')) {
+                    showToast('이미지 파일만 업로드 가능합니다', 'error');
+                    continue;
+                }
+
+                if (file.size > 10 * 1024 * 1024) {
+                    showToast('파일 크기는 10MB 이하여야 합니다', 'error');
+                    continue;
+                }
+
+                // 미리보기 추가 (업로드 중 상태)
+                const previewUrl = URL.createObjectURL(file);
+                const index = uploadedImages.length;
+                uploadedImages.push({ url: null, previewUrl, uploading: true });
+                renderImagePreviews();
+
+                // S3 업로드
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    if (productIdVal) {
+                        formData.append('product_id', productIdVal);
+                    }
+
+                    const res = await fetch(`${API_BASE}/upload/image?product_id=${encodeURIComponent(productIdVal)}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await res.json();
+
+                    if (data.success) {
+                        uploadedImages[index].url = data.url;
+                        uploadedImages[index].uploading = false;
+                        renderImagePreviews();
+                    } else {
+                        uploadedImages.splice(index, 1);
+                        renderImagePreviews();
+                        showToast(data.message || '이미지 업로드 실패', 'error');
+                    }
+                } catch (err) {
+                    uploadedImages.splice(index, 1);
+                    renderImagePreviews();
+                    showToast('이미지 업로드 중 오류 발생', 'error');
+                }
+            }
+        }
+
+        // 이미지 미리보기 렌더링
+        function renderImagePreviews() {
+            imagePreviewList.innerHTML = uploadedImages.map((img, i) => `
+                <div class="image-preview-item ${img.uploading ? 'uploading' : ''}">
+                    <img src="${img.previewUrl || img.url}" alt="Preview">
+                    ${!img.uploading ? `<button type="button" class="remove-btn" onclick="removeImage(${i})">×</button>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // 이미지 제거
+        window.removeImage = (index) => {
+            if (uploadedImages[index].previewUrl) {
+                URL.revokeObjectURL(uploadedImages[index].previewUrl);
+            }
+            uploadedImages.splice(index, 1);
+            renderImagePreviews();
+        };
+
+        // 폼 제출
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const productIdVal = productId.value.trim();
+            if (!productIdVal) {
+                showToast('상품 ID를 입력해주세요', 'error');
+                productId.focus();
+                return;
+            }
+
+            const rating = document.querySelector('input[name="rating"]:checked')?.value;
+            if (!rating) {
+                showToast('평점을 선택해주세요', 'error');
+                return;
+            }
+
+            const userNameVal = userName.value.trim();
+            if (!userNameVal) {
+                showToast('작성자 이름을 입력해주세요', 'error');
+                userName.focus();
+                return;
+            }
+
+            // 업로드 중인 이미지가 있는지 확인
+            if (uploadedImages.some(img => img.uploading)) {
+                showToast('이미지 업로드가 진행 중입니다', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span>등록 중...';
+
+            try {
+                const imageUrls = uploadedImages.filter(img => img.url).map(img => img.url);
+
+                const res = await fetch(`${API_BASE}/reviews`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        productId: productIdVal,
+                        rating: parseFloat(rating),
+                        userName: userNameVal,
+                        content: content.value.trim(),
+                        images: imageUrls
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    showToast('리뷰가 등록되었습니다', 'success');
+
+                    // 최근 등록 목록에 추가
+                    recentReviews.unshift({
+                        userName: userNameVal,
+                        rating: parseFloat(rating),
+                        content: content.value.trim(),
+                        images: imageUrls
+                    });
+                    if (recentReviews.length > 5) recentReviews.pop();
+                    renderRecentReviews();
+
+                    // 폼 초기화 (상품 ID와 평점은 유지)
+                    userName.value = '';
+                    content.value = '';
+                    charCount.textContent = '0';
+                    uploadedImages = [];
+                    renderImagePreviews();
+                } else {
+                    showToast(data.message || '등록에 실패했습니다', 'error');
+                }
+            } catch (err) {
+                showToast('서버 오류가 발생했습니다', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '리뷰 등록';
+            }
+        });
+
+        // 최근 리뷰 렌더링
+        function renderRecentReviews() {
+            if (recentReviews.length === 0) {
+                recentReviewsDiv.style.display = 'none';
+                return;
+            }
+
+            recentReviewsDiv.style.display = 'block';
+            recentList.innerHTML = recentReviews.map(r => `
+                <div class="recent-item">
+                    <div class="meta">
+                        <span class="rating">${'★'.repeat(Math.floor(r.rating))}${r.rating % 1 ? '½' : ''}${'☆'.repeat(5 - Math.ceil(r.rating))}</span>
+                        ${r.userName}
+                    </div>
+                    <div class="content">${r.content || '(내용 없음)'}</div>
+                    ${r.images && r.images.length > 0 ? `
+                        <div class="images">
+                            ${r.images.map(url => `<img src="${url}" alt="Review image">`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

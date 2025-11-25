@@ -176,9 +176,11 @@
             transition: all 0.2s;
         }
 
-        .image-upload-area:hover {
+        .image-upload-area:hover,
+        .image-upload-area:focus {
             border-color: #4a90d9;
             background: #f8f9fa;
+            outline: none;
         }
 
         .image-upload-area.dragover {
@@ -427,11 +429,11 @@
 
                 <div class="form-group">
                     <label>이미지 <span class="optional">(선택, 최대 5장)</span></label>
-                    <div class="image-upload-area" id="imageUploadArea">
+                    <div class="image-upload-area" id="imageUploadArea" tabindex="0">
                         <input type="file" id="imageInput" accept="image/*" multiple>
                         <div class="icon">+</div>
                         <div class="text">클릭하거나 이미지를 드래그하세요</div>
-                        <div class="hint">JPG, PNG, GIF, WEBP (최대 10MB)</div>
+                        <div class="hint">JPG, PNG, GIF, WEBP (최대 10MB) / Ctrl+V 붙여넣기 가능</div>
                     </div>
                     <div class="image-preview-list" id="imagePreviewList"></div>
                 </div>
@@ -505,6 +507,21 @@
         imageInput.addEventListener('change', (e) => {
             handleFiles(e.target.files);
             imageInput.value = '';
+        });
+
+        // 클립보드 붙여넣기 (Ctrl+V) - 페이지 어디서든
+        document.addEventListener('paste', (e) => {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    if (file) handleFiles([file]);
+                    return;
+                }
+            }
         });
 
         // 파일 처리
